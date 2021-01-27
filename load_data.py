@@ -8,28 +8,42 @@ from os.path import join
 from nltk import tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+import pandas as pd
+import pickle
 
+with open("/content/dfc_0.57.pkl", 'rb') as f:
+    dfc = pickle.load(f)
+with open("/content/dfg_0.72.pkl", 'rb') as f:
+    dfg = pickle.load(f)
+with open("/content/dfo_0.6.pkl", 'rb') as f:
+    dfo = pickle.load(f)
+with open("/content/dfs_0.6.pkl", 'rb') as f:
+    dfs = pickle.load(f)
+
+dfmain = pd.concat([dfc,dfs,dfg,dfo]).reset_index(drop=True)
 
 def read_file(data_dir, with_evaluation):
     data = []
     target = []
-    with open(join(data_dir, 'dataset.csv'), 'rt', encoding='utf-8') as csvfile:
-        csv.field_size_limit(500 * 1024 * 1024)
-        reader = csv.reader(csvfile)
-        for row in reader:
-            if data_dir == './agnews':
-                doc = row[1] + '. ' + row[2]
-                data.append(doc)
-                target.append(int(row[0]) - 1)
-            elif data_dir == './yelp':
-                data.append(row[1])
-                target.append(int(row[0]) - 1)
-    if with_evaluation:
-        y = np.asarray(target)
-        assert len(data) == len(y)
-        assert set(range(len(np.unique(y)))) == set(np.unique(y))
-    else:
-        y = None
+    y = None
+    # with open(join(data_dir, 'dataset.csv'), 'rt', encoding='utf-8') as csvfile:
+    #     csv.field_size_limit(500 * 1024 * 1024)
+    #     reader = csv.reader(csvfile)
+    #     for row in reader:
+    #         if data_dir == './agnews':
+    #             doc = row[1] + '. ' + row[2]
+    #             data.append(doc)
+    #             target.append(int(row[0]) - 1)
+    #         elif data_dir == './yelp':
+    #             data.append(row[1])
+    #             target.append(int(row[0]) - 1)
+    # if with_evaluation:
+    #     y = np.asarray(target)
+    #     assert len(data) == len(y)
+    #     assert set(range(len(np.unique(y)))) == set(np.unique(y))
+    # else:
+    #     y = None
+    data = dfmain['Norm_Tweet'].astype(str).values.tolist()
     return data, y
 
 

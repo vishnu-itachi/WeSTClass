@@ -68,7 +68,7 @@ if __name__ == "__main__":
     
     ### Basic settings ###
     # dataset selection: AG's News (default) and Yelp Review
-    parser.add_argument('--dataset', default='agnews', choices=['agnews', 'yelp'])
+    parser.add_argument('--dataset', default='tweet', choices=['agnews', 'yelp','tweet'])
     # neural model selection: Convolutional Neural Network (default) and Hierarchical Attention Network
     parser.add_argument('--model', default='cnn', choices=['cnn', 'rnn'])
     # weak supervision selection: label surface names (default), class-related keywords and labeled documents
@@ -123,6 +123,12 @@ if __name__ == "__main__":
             pretrain_epochs = 30
             self_lr = 1e-4
             max_sequence_length = 500
+        
+        elif args.dataset == 'tweet':
+            update_interval = 50
+            pretrain_epochs = 30
+            self_lr = 1e-4
+            max_sequence_length = 50
 
         decay = 1e-6
     
@@ -141,6 +147,13 @@ if __name__ == "__main__":
             self_lr = 1e-4
             sent_len = 30
             doc_len = 40
+        
+        elif args.dataset == 'tweet':
+            update_interval = 100
+            pretrain_epochs = 200
+            self_lr = 1e-4
+            sent_len = 32
+            doc_len = 20
 
         decay = 1e-5
         max_sequence_length = [doc_len, sent_len]

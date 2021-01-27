@@ -47,14 +47,14 @@ def train_word2vec(sentence_matrix, vocabulary_inv, dataset_name, mode='skipgram
     return embedding_weights
 
 
-def write_output(write_path, y_pred, perm):
+def write_output(write_path, y_pred, perm , conf):
     invperm = np.zeros(len(perm), dtype='int32')
     for i,v in enumerate(perm):
         invperm[v] = i
     y_pred = y_pred[invperm]
     with open(os.path.join(write_path, 'out.txt'), 'w') as f:
-        for val in y_pred:
-            f.write(str(val) + '\n')
+        for val, p in zip(y_pred,conf):
+            f.write(str(val) +" "+str(p)+ '\n')
     print("Classification results are written in {}".format(os.path.join(write_path, 'out.txt')))
     return
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
                      epochs=pretrain_epochs, batch_size=args.batch_size,
                      save_dir='./results/{}/{}/phase2'.format(args.dataset, args.model))
 
-        y_pred = wstc.predict(x)
+        y_pred,conf = wstc.predict(x)
         if y is not None:
             f1_macro, f1_micro = np.round(f1(y, y_pred), 5)
             print('F1 score after pre-training: f1_macro = {}, f1_micro = {}'.format(f1_macro, f1_micro))
@@ -245,7 +245,7 @@ if __name__ == "__main__":
         print("\n### Phase 3: self-training ###")
         selftrain_optimizer = SGD(lr=self_lr, momentum=0.9, decay=decay)
         wstc.compile(optimizer=selftrain_optimizer, loss='kld')
-        y_pred = wstc.fit(x, y=y, tol=delta, maxiter=args.maxiter, batch_size=args.batch_size,
+        y_pred,conf = wstc.fit(x, y=y, tol=delta, maxiter=args.maxiter, batch_size=args.batch_size,
                          update_interval=update_interval, save_dir='./results/{}/{}/phase3'.format(args.dataset, args.model), 
                          save_suffix=args.dataset+'_'+str(args.sup_source))
         print('Self-training time: {:.2f}s'.format(time() - t0))
@@ -253,10 +253,10 @@ if __name__ == "__main__":
     else:
         print("\n### Directly loading trained weights ###")
         wstc.load_weights(args.trained_weights)
-        y_pred = wstc.predict(x)
+        y_pred, conf = wstc.predict(x)
         if y is not None:
             f1_macro, f1_micro = np.round(f1(y, y_pred), 5)
             print('F1 score: f1_macro = {}, f1_micro = {}'.format(f1_macro, f1_micro))
     
     print("\n### Generating outputs ###")
-    write_output('./' + args.dataset, y_pred, perm)
+    write_output('./' + args.dataset, y_pred, perm, conf)

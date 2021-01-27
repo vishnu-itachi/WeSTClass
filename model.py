@@ -201,7 +201,9 @@ class WSTC(object):
 
     def predict(self, x):
         q = self.model.predict(x, verbose=0)
-        return q.argmax(1)
+        q_ = np.array(q)
+        print(q_)
+        return q.argmax(1) , np.max(q_, axis=1)
 
     def target_distribution(self, q, power=2):
         weight = q**power / q.sum(axis=0)
